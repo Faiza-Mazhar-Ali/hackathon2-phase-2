@@ -40,7 +40,7 @@ function ProfileContent() {
     if (!isLoading && !isAuthenticated) {
       router.push('/auth/sign-in');
     } else if (user) {
-      const avatarUrl = user.avatar || null;
+      const avatarUrl = user.avatar || '';
       setUserData({
         username: user.username,
         email: user.email,
@@ -70,7 +70,8 @@ function ProfileContent() {
     setIsEditing(false);
     setEditData({
       username: userData.username,
-      email: userData.email
+      email: userData.email,
+      avatar: userData.avatar
     });
   };
 

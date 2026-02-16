@@ -7,11 +7,15 @@ import { useAuth } from './AuthContext';
 
 import { Task } from '@/types/task';
 
+interface ToggleCompletionResponse {
+  completed: boolean;
+}
+
 interface TaskContextType {
   tasks: Task[];
   loading: boolean;
   error: string | null;
-  fetchTasks: () => Promise<void>;
+  fetchTasks: (filters?: { completed?: boolean; priority?: string; search?: string }) => Promise<void>;
   createTask: (title: string, description: string, priority?: 'low' | 'medium' | 'high', due_date?: string, tags?: string[]) => Promise<void>;
   updateTask: (id: number, title: string, description: string, priority?: 'low' | 'medium' | 'high', due_date?: string, tags?: string[]) => Promise<void>;
   deleteTask: (id: number) => Promise<void>;
@@ -69,7 +73,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
 
     try {
-      const response = await apiClient.post(`/api/${user.id}/tasks`, { 
+      const response = await apiClient.post<Task>(`/api/${user.id}/tasks`, { 
         title, 
         description,
         priority,
@@ -96,7 +100,7 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
 
     try {
-      const response = await apiClient.put(`/api/${user.id}/tasks/${id}`, { 
+      const response = await apiClient.put<Task>(`/api/${user.id}/tasks/${id}`, { 
         title, 
         description,
         priority,
@@ -105,7 +109,8 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
       });
 
       if (response.data) {
-        setTasks(tasks.map(task => (task.id === id ? response.data : task)));
+        const updatedTask = response.data;
+        setTasks(tasks.map(task => (task.id === id ? updatedTask : task)));
       } else {
         setError(response.error || 'Failed to update task');
       }
@@ -144,11 +149,12 @@ export const TaskProvider = ({ children }: { children: ReactNode }) => {
     setError(null);
 
     try {
-      const response = await apiClient.patch(`/api/${user.id}/tasks/${id}/toggle`);
+      const response = await apiClient.patch<ToggleCompletionResponse>(`/api/${user.id}/tasks/${id}/toggle`);
 
       if (response.data) {
+        const updatedTaskData = response.data;
         setTasks(tasks.map(task =>
-          task.id === id ? { ...task, completed: response.data.completed } : task
+          task.id === id ? { ...task, completed: updatedTaskData.completed } : task
         ));
       } else {
         setError(response.error || 'Failed to toggle task completion');

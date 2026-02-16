@@ -8,6 +8,12 @@ interface User {
   id: number;
   username: string;
   email: string;
+  avatar?: string;
+  created_at?: string;
+}
+
+interface AuthResponse {
+  access_token: string;
 }
 
 interface AuthContextType {
@@ -57,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await apiClient.post('/api/auth/login', { email, password });
+      const response = await apiClient.post<AuthResponse>('/api/auth/login', { email, password });
       
       if (response.data && response.data.access_token) {
         localStorage.setItem('token', response.data.access_token);
@@ -74,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const register = async (username: string, email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await apiClient.post('/api/auth/register', { username, email, password });
+      const response = await apiClient.post<AuthResponse>('/api/auth/register', { username, email, password });
 
       if (response.data && response.data.access_token) {
         // Store the token after successful registration

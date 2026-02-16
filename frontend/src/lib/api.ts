@@ -6,7 +6,7 @@ import { toast } from 'react-hot-toast';
 const API_BASE_URL =
   typeof window !== 'undefined'
     ? process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000'
-    : process.env.API_BASE_URL || 'http://127.0.0.1:8000/';
+    : process.env.API_BASE_URL || 'http://127.0.0.1:8000';
 
 interface ApiResponse<T = any> {
   data?: T;
@@ -23,18 +23,19 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const url = `${API_BASE_URL}${endpoint}`;
+    // Ensure proper URL construction without double slashes
+    const normalizedBaseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+    const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    const url = `${normalizedBaseUrl}${normalizedEndpoint}`;
     const token = this.getToken();
 
     // Configure headers with proper content type
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    };
+    const headers = new Headers(options.headers);
+    headers.set('Content-Type', 'application/json');
 
     // Add authorization header if token exists
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers.set('Authorization', `Bearer ${token}`);
     }
 
     try {
@@ -43,7 +44,7 @@ class ApiClient {
         ...options,
         headers,
         // Include credentials for cross-origin requests if needed
-        credentials: 'omit', // Change to 'include' if your backend requires cookies
+        credentials: 'include', // Changed from 'omit' to 'include' to allow cookies and auth
       });
 
       // Check if response is JSON before parsing
