@@ -80,7 +80,29 @@ def create_task(
         task_dict['tags'] = json.dumps(task_dict['tags'])
     else:
         task_dict['tags'] = json.dumps([])
-    
+
+    # Handle due_date conversion to ensure compatibility
+    if task_dict.get('due_date'):
+        from datetime import datetime
+        due_date_str = task_dict['due_date']
+        # Try to parse the date string in various formats
+        date_formats = ['%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y', '%Y-%m-%d %H:%M:%S']
+        
+        parsed_date = None
+        for fmt in date_formats:
+            try:
+                parsed_date = datetime.strptime(due_date_str, fmt)
+                break
+            except ValueError:
+                continue
+        
+        # If none of the formats worked, leave as is and let DB handle it
+        if parsed_date:
+            task_dict['due_date'] = parsed_date
+        else:
+            # If parsing fails, set to None to avoid database errors
+            task_dict['due_date'] = None
+
     db_task = TaskModel(**task_dict, owner_id=user_id)
     db.add(db_task)
     db.commit()

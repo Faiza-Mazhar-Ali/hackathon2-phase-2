@@ -21,10 +21,9 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
-
-def get_password_hash(password):
+def get_password_hash(password: str):
+    password = password[:72]   # truncate to bcrypt limit
     return pwd_context.hash(password)
-
 
 def authenticate_user(db: Session, email: str, password: str):
     user = db.query(User).filter(User.email == email).first()

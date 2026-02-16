@@ -24,6 +24,8 @@ app.add_middleware(
         "http://127.0.0.1:3000",  # Alternative localhost
         "http://localhost:3001",  # Next.js alternative port
         "http://127.0.0.1:3001",  # Alternative localhost
+        "http://localhost:8000",  # Same origin as backend (for debugging)
+        "http://127.0.0.1:8000",  # Alternative localhost for backend
         "https://localhost:3000", # HTTPS versions
         "https://127.0.0.1:3000",
         "https://localhost:3001",
